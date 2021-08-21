@@ -20,7 +20,7 @@
     "build": "npm run lint && npm run compile",
     "lint": "eslint \"bin/**/*.js\" \"src/**/*.ts\" \"scripts/**/*.js\" \"test/**/*.ts\"",
     "lint-fix": "npm run lint -- --fix",
-    "test": "npm run lint && mocha --require ts-node/register ./test/**/*-test.[tj]s --timeout 4000",
+    "test": "mocha --require ts-node/register --require /data/ProfilingPromises/ProfilingPromisesAnalysis/asyncHooks_require.js ./test/**/*-test.[tj]s --timeout 4000",
     "test:ci": "mocha --require ts-node/register --reporter mocha-junit-reporter ./test/**/*-test.[tj]s --timeout 4000",
     "test:debugger": "mocha --inspect --require ts-node/register ./test/**/*-test.[tj]s --timeout 4000",
     "functional": "pwsh test/functional/Invoke-FunctionalTests.ps1 -Token $AC_API_TOKEN -Environment int",
