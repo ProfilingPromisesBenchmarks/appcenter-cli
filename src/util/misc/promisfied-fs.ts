@@ -3,6 +3,7 @@ import * as path from "path";
 import * as _ from "lodash";
 import * as rimraf from "rimraf";
 import * as temp from "temp";
+// import { file } from "jszip";
 
 temp.track();
 
@@ -85,13 +86,22 @@ export async function cpDir(source: string, target: string): Promise<void> {
     createLongPath(target);
   }
   const files = await readdir(source);
+  // DR-ASYNC: REFACTOR AWAIT-IN-LOOP
+  // for (let i = 0; i < files.length; i++) {
+  //   console.log("*** EXECUTING cpDir");
+  //   const sourceEntry = path.join(source, files[i]);
+  //   const targetEntry = path.join(target, files[i]);
 
-  for (let i = 0; i < files.length; i++) {
-    const sourceEntry = path.join(source, files[i]);
-    const targetEntry = path.join(target, files[i]);
+  //   await cp(sourceEntry, targetEntry);
+  // }
 
-    await cp(sourceEntry, targetEntry);
-  }
+  await Promise.all(
+    files.map((fileName) => {
+      const sourceEntry = path.join(source, fileName);
+      const targetEntry = path.join(target, fileName);
+      return cp(sourceEntry, targetEntry);
+    })
+  );
 }
 
 export function cpFile(source: string, target: string): Promise<void> {
@@ -163,10 +173,17 @@ export async function access(path: string | Buffer, mode: number): Promise<void>
 export async function walk(dir: string): Promise<string[]> {
   const stats = await stat(dir);
   if (stats.isDirectory()) {
+    // DR-ASYNC: REFACTOR AWAIT-IN-LOOP
+    // let files: string[] = [];
+    // for (const file of await readdir(dir)) {
+    //   files = files.concat(await walk(path.join(dir, file)));
+    // }
+
     let files: string[] = [];
-    for (const file of await readdir(dir)) {
-      files = files.concat(await walk(path.join(dir, file)));
-    }
+    const filesInDir = await readdir(dir);
+    const results: any[] = await Promise.all(filesInDir.map((file) => walk(path.join(dir, file))));
+    results.forEach((result) => (files = files.concat(result)));
+
     return files;
   } else {
     return [dir];
